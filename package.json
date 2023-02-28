@@ -2,7 +2,7 @@
   "name": "example_1",
   "version": "1.0.0",
   "description": "",
-  "main": "src/server.ts",
+  "main": "src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/server.js",
@@ -35,6 +35,9 @@
   },
   "_moduleAliases": {
     "@config": "dist/config",
-    "@utils": "dist/utils"
+    "@utils": "dist/utils",
+    "@interfaces": "dist/interfaces",
+    "@middlewares": "dist/middlewares",
+    "@controllers": "dist/controllers"
   }
 }
