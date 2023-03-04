@@ -39,69 +39,53 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var express_1 = __importDefault(require("express"));
-var cors_1 = __importDefault(require("cors"));
-var helmet_1 = __importDefault(require("helmet"));
-var morgan_1 = __importDefault(require("morgan"));
-var compression_1 = __importDefault(require("compression"));
+var N5Vocab_Model_1 = __importDefault(require("./N5Vocab.Model"));
 var Logging_1 = __importDefault(require("@utils/Logging"));
-var Config_1 = __importDefault(require("@config/Config"));
-var LogRequestInfo_1 = __importDefault(require("@middlewares/LogRequestInfo"));
-var SetAPIRules_1 = __importDefault(require("@middlewares/SetAPIRules"));
-var TryConnectMongoDB_1 = __importDefault(require("@utils/TryConnectMongoDB"));
-var TryConnectMysql_1 = __importDefault(require("@utils/TryConnectMysql"));
-var App = /** @class */ (function () {
-    function App(controllers, port) {
-        this.express = (0, express_1.default)();
-        this.port = Number(Config_1.default.server.port) || port;
-        this.host = String(Config_1.default.server.host) || "localhost";
-        this.namespace = "SERVER";
-        this.initializeDatabaseConnection();
-        this.initializeMiddlewares();
-        this.initializeControllers(controllers);
-    }
-    App.prototype.initializeDatabaseConnection = function () {
-        return __awaiter(this, void 0, void 0, function () {
+var N5VocabServices = /** @class */ (function () {
+    function N5VocabServices() {
+        var _this = this;
+        this.n5vocab = N5Vocab_Model_1.default;
+        this.namespace = "N5VOCAB_SERVICES";
+        this.create = function (write, japanese_transliteration, kanji_transliteration, meaning) { return __awaiter(_this, void 0, void 0, function () {
+            var n5vocab, error_1, message;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, (0, TryConnectMongoDB_1.default)()];
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this.n5vocab.create({ write: write, japanese_transliteration: japanese_transliteration, kanji_transliteration: kanji_transliteration, meaning: meaning })];
                     case 1:
-                        _a.sent();
-                        return [4 /*yield*/, (0, TryConnectMysql_1.default)()];
+                        n5vocab = _a.sent();
+                        return [2 /*return*/, n5vocab];
                     case 2:
-                        _a.sent();
-                        return [2 /*return*/];
+                        error_1 = _a.sent();
+                        message = "Unable to create N5 vocab in MongoDB: ".concat(error_1.message);
+                        Logging_1.default.error(this.namespace, message);
+                        throw new Error(message);
+                    case 3: return [2 /*return*/];
                 }
             });
-        });
-    };
-    ;
-    App.prototype.initializeMiddlewares = function () {
-        this.express.use((0, cors_1.default)());
-        this.express.use((0, helmet_1.default)());
-        this.express.use((0, morgan_1.default)('dev'));
-        this.express.use(express_1.default.json());
-        this.express.use(express_1.default.urlencoded({ extended: true }));
-        this.express.use(LogRequestInfo_1.default);
-        this.express.use(SetAPIRules_1.default);
-        this.express.use((0, compression_1.default)());
-    };
-    ;
-    App.prototype.initializeControllers = function (controllers) {
-        var _this = this;
-        controllers.forEach(function (controller) {
-            console.log(controller.path);
-            _this.express.use('/', controller.router);
-        });
-    };
-    App.prototype.listen = function () {
-        var _this = this;
-        this.express.listen(this.port, function () {
-            Logging_1.default.info(_this.namespace, "Server is running at http://".concat(_this.host, ":").concat(_this.port));
-        });
-    };
-    ;
-    return App;
+        }); };
+        this.read = function () { return __awaiter(_this, void 0, void 0, function () {
+            var all_n5vocab, error_2, message;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this.n5vocab.find()];
+                    case 1:
+                        all_n5vocab = _a.sent();
+                        return [2 /*return*/, all_n5vocab];
+                    case 2:
+                        error_2 = _a.sent();
+                        message = "Unable to read N5 vocab in MongoDB: ".concat(error_2.message);
+                        Logging_1.default.error(this.namespace, message);
+                        throw new Error(message);
+                    case 3: return [2 /*return*/];
+                }
+            });
+        }); };
+    }
+    return N5VocabServices;
 }());
-exports.default = App;
+exports.default = N5VocabServices;
 ;

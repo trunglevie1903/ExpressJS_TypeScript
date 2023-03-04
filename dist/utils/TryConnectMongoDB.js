@@ -39,69 +39,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var express_1 = __importDefault(require("express"));
-var cors_1 = __importDefault(require("cors"));
-var helmet_1 = __importDefault(require("helmet"));
-var morgan_1 = __importDefault(require("morgan"));
-var compression_1 = __importDefault(require("compression"));
-var Logging_1 = __importDefault(require("@utils/Logging"));
+var mongoose_1 = __importDefault(require("mongoose"));
 var Config_1 = __importDefault(require("@config/Config"));
-var LogRequestInfo_1 = __importDefault(require("@middlewares/LogRequestInfo"));
-var SetAPIRules_1 = __importDefault(require("@middlewares/SetAPIRules"));
-var TryConnectMongoDB_1 = __importDefault(require("@utils/TryConnectMongoDB"));
-var TryConnectMysql_1 = __importDefault(require("@utils/TryConnectMysql"));
-var App = /** @class */ (function () {
-    function App(controllers, port) {
-        this.express = (0, express_1.default)();
-        this.port = Number(Config_1.default.server.port) || port;
-        this.host = String(Config_1.default.server.host) || "localhost";
-        this.namespace = "SERVER";
-        this.initializeDatabaseConnection();
-        this.initializeMiddlewares();
-        this.initializeControllers(controllers);
-    }
-    App.prototype.initializeDatabaseConnection = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, (0, TryConnectMongoDB_1.default)()];
-                    case 1:
-                        _a.sent();
-                        return [4 /*yield*/, (0, TryConnectMysql_1.default)()];
-                    case 2:
-                        _a.sent();
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    ;
-    App.prototype.initializeMiddlewares = function () {
-        this.express.use((0, cors_1.default)());
-        this.express.use((0, helmet_1.default)());
-        this.express.use((0, morgan_1.default)('dev'));
-        this.express.use(express_1.default.json());
-        this.express.use(express_1.default.urlencoded({ extended: true }));
-        this.express.use(LogRequestInfo_1.default);
-        this.express.use(SetAPIRules_1.default);
-        this.express.use((0, compression_1.default)());
-    };
-    ;
-    App.prototype.initializeControllers = function (controllers) {
-        var _this = this;
-        controllers.forEach(function (controller) {
-            console.log(controller.path);
-            _this.express.use('/', controller.router);
-        });
-    };
-    App.prototype.listen = function () {
-        var _this = this;
-        this.express.listen(this.port, function () {
-            Logging_1.default.info(_this.namespace, "Server is running at http://".concat(_this.host, ":").concat(_this.port));
-        });
-    };
-    ;
-    return App;
-}());
-exports.default = App;
-;
+var Logging_1 = __importDefault(require("./Logging"));
+var Connect_MongoDB = function () { return __awaiter(void 0, void 0, void 0, function () {
+    var namespace, _a, path, user, password, error_1;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                namespace = "CONNECT_MONGODB";
+                _a = Config_1.default.mongo, path = _a.path, user = _a.user, password = _a.password;
+                _b.label = 1;
+            case 1:
+                _b.trys.push([1, 3, , 4]);
+                mongoose_1.default.set('strictQuery', false);
+                return [4 /*yield*/, mongoose_1.default.connect("mongodb+srv://".concat(user, ":").concat(password).concat(path), {})];
+            case 2:
+                _b.sent();
+                Logging_1.default.info(namespace, 'Connected to MongoDB');
+                return [3 /*break*/, 4];
+            case 3:
+                error_1 = _b.sent();
+                Logging_1.default.error(namespace, 'Cannot connect to MongoDB');
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); };
+exports.default = Connect_MongoDB;

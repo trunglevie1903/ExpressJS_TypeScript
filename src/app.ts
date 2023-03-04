@@ -9,6 +9,8 @@ import Config from '@config/Config';
 import IController from '@interfaces/controller';
 import LogRequestInfo from '@middlewares/LogRequestInfo';
 import SetAPIRules from '@middlewares/SetAPIRules';
+import Connect_MongoDB from '@utils/TryConnectMongoDB';
+import Connect_Mysql from '@utils/TryConnectMysql';
 
 export default class App {
   public express: Application;
@@ -22,9 +24,15 @@ export default class App {
     this.host = String(Config.server.host) || "localhost";
     this.namespace = "SERVER";
 
+    this.initializeDatabaseConnection();
     this.initializeMiddlewares();
     this.initializeControllers(controllers);
   }
+
+  private async initializeDatabaseConnection(): Promise<void> {
+    await Connect_MongoDB();
+    await Connect_Mysql();
+  };
 
   private initializeMiddlewares(): void {
     this.express.use(cors());

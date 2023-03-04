@@ -39,69 +39,45 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var express_1 = __importDefault(require("express"));
-var cors_1 = __importDefault(require("cors"));
-var helmet_1 = __importDefault(require("helmet"));
-var morgan_1 = __importDefault(require("morgan"));
-var compression_1 = __importDefault(require("compression"));
-var Logging_1 = __importDefault(require("@utils/Logging"));
+var promise_1 = __importDefault(require("mysql2/promise"));
 var Config_1 = __importDefault(require("@config/Config"));
-var LogRequestInfo_1 = __importDefault(require("@middlewares/LogRequestInfo"));
-var SetAPIRules_1 = __importDefault(require("@middlewares/SetAPIRules"));
-var TryConnectMongoDB_1 = __importDefault(require("@utils/TryConnectMongoDB"));
-var TryConnectMysql_1 = __importDefault(require("@utils/TryConnectMysql"));
-var App = /** @class */ (function () {
-    function App(controllers, port) {
-        this.express = (0, express_1.default)();
-        this.port = Number(Config_1.default.server.port) || port;
-        this.host = String(Config_1.default.server.host) || "localhost";
-        this.namespace = "SERVER";
-        this.initializeDatabaseConnection();
-        this.initializeMiddlewares();
-        this.initializeControllers(controllers);
-    }
-    App.prototype.initializeDatabaseConnection = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, (0, TryConnectMongoDB_1.default)()];
-                    case 1:
-                        _a.sent();
-                        return [4 /*yield*/, (0, TryConnectMysql_1.default)()];
-                    case 2:
-                        _a.sent();
-                        return [2 /*return*/];
+var Logging_1 = __importDefault(require("./Logging"));
+var Connect_Mysql = function () { return __awaiter(void 0, void 0, void 0, function () {
+    var namespace, _a, host, user, password, dbname, connection, _b, rows, fields, error_1;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
+            case 0:
+                namespace = 'CONNECT_MYSQL';
+                _a = Config_1.default.mysql, host = _a.host, user = _a.user, password = _a.password, dbname = _a.dbname;
+                _c.label = 1;
+            case 1:
+                _c.trys.push([1, 4, , 5]);
+                return [4 /*yield*/, promise_1.default.createConnection({
+                        host: host,
+                        user: user,
+                        password: password,
+                        database: dbname
+                    })];
+            case 2:
+                connection = _c.sent();
+                return [4 /*yield*/, connection.execute('SELECT * FROM `programming_languages`')];
+            case 3:
+                _b = _c.sent(), rows = _b[0], fields = _b[1];
+                // Logging.info(namespace, );
+                if (rows || fields) {
+                    Logging_1.default.info(namespace, 'Connected to MySQL');
                 }
-            });
-        });
-    };
-    ;
-    App.prototype.initializeMiddlewares = function () {
-        this.express.use((0, cors_1.default)());
-        this.express.use((0, helmet_1.default)());
-        this.express.use((0, morgan_1.default)('dev'));
-        this.express.use(express_1.default.json());
-        this.express.use(express_1.default.urlencoded({ extended: true }));
-        this.express.use(LogRequestInfo_1.default);
-        this.express.use(SetAPIRules_1.default);
-        this.express.use((0, compression_1.default)());
-    };
-    ;
-    App.prototype.initializeControllers = function (controllers) {
-        var _this = this;
-        controllers.forEach(function (controller) {
-            console.log(controller.path);
-            _this.express.use('/', controller.router);
-        });
-    };
-    App.prototype.listen = function () {
-        var _this = this;
-        this.express.listen(this.port, function () {
-            Logging_1.default.info(_this.namespace, "Server is running at http://".concat(_this.host, ":").concat(_this.port));
-        });
-    };
-    ;
-    return App;
-}());
-exports.default = App;
-;
+                else {
+                    Logging_1.default.error(namespace, 'Something went wrong when trying to connect to MySQL');
+                }
+                connection.end();
+                return [3 /*break*/, 5];
+            case 4:
+                error_1 = _c.sent();
+                Logging_1.default.error(namespace, error_1.message);
+                return [3 /*break*/, 5];
+            case 5: return [2 /*return*/];
+        }
+    });
+}); };
+exports.default = Connect_Mysql;
